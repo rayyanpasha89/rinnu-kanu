@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useStorage, getTodayKey, getDayIndex } from './useStorage';
 
 /* ── CONSTANTS ── */
@@ -113,7 +113,6 @@ const TAG_COLORS = {
 /* ── STYLES ── */
 const S = {
   app: {
-    minHeight: '100vh',
     minHeight: '100dvh',
     background: 'linear-gradient(175deg, #fdf6f0 0%, #f9ede3 35%, #f0e4da 65%, #ece0d8 100%)',
     fontFamily: "'DM Sans', sans-serif",
@@ -254,7 +253,6 @@ export default function App() {
   const [journal, setJournal] = useStorage('journal', []);
   const [anniversary, setAnniversary] = useStorage('anniversary', '2022-07-05');
   const [moodHistory, setMoodHistory] = useStorage('moodHistory', {});
-  const [streakData, setStreakData] = useStorage('streaks', {});
 
   // Local state
   const [noteInput, setNoteInput] = useState('');
@@ -265,6 +263,7 @@ export default function App() {
   const [showAnniEdit, setShowAnniEdit] = useState(!anniversary);
   const [anniInput, setAnniInput] = useState(anniversary);
   const [activeUsTab, setActiveUsTab] = useState('countdown');
+  const [showAllNotes, setShowAllNotes] = useState(false);
 
   // Derived
   const todayMoods = moods[today] || {};
@@ -315,9 +314,9 @@ export default function App() {
 
   // Handlers
   const setMood = (person, emoji) => {
-    const updated = { ...moods, [today]: { ...todayMoods, [person]: emoji } };
-    setMoods(updated);
-    setMoodHistory({ ...moodHistory, [today]: { ...todayMoods, [person]: emoji } });
+    const updatedDay = { ...todayMoods, [person]: emoji };
+    setMoods({ ...moods, [today]: updatedDay });
+    setMoodHistory({ ...moodHistory, [today]: updatedDay });
   };
 
   const toggleRoutine = (i) => {
@@ -530,13 +529,20 @@ export default function App() {
                   </div>
                 </div>
               )}
-              {notes.slice(0, 5).map(n => (
+              {(showAllNotes ? notes : notes.slice(0, 5)).map(n => (
                 <div key={n.id} style={{ marginTop: 10, padding: 12, borderRadius: 14, background: 'linear-gradient(135deg, rgba(212,132,122,0.06), rgba(139,126,200,0.06))', fontSize: 13, color: '#5a4040', lineHeight: 1.5 }}>
-                  <div>"{n.text}"</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                    <div style={{ flex: 1 }}>"{n.text}"</div>
+                    <button onClick={() => setNotes(notes.filter(x => x.id !== n.id))} style={{ background: 'none', border: 'none', fontSize: 14, color: '#ccc', cursor: 'pointer', padding: '0 0 0 4px', flexShrink: 0, lineHeight: 1 }}>×</button>
+                  </div>
                   <div style={{ fontSize: 10, color: '#b89a8a', marginTop: 4, textAlign: 'right' }}>{n.date} • {n.time}</div>
                 </div>
               ))}
-              {notes.length > 5 && <div style={{ textAlign: 'center', fontSize: 11, color: '#b89a8a', marginTop: 8 }}>+ {notes.length - 5} more notes</div>}
+              {notes.length > 5 && (
+                <button onClick={() => setShowAllNotes(v => !v)} style={{ marginTop: 8, width: '100%', padding: '6px 0', border: 'none', background: 'none', fontSize: 11, color: '#b89a8a', cursor: 'pointer' }}>
+                  {showAllNotes ? '▲ Show less' : `▼ Show ${notes.length - 5} more notes`}
+                </button>
+              )}
             </Card>
           </Section>
         </>}
@@ -547,10 +553,12 @@ export default function App() {
             <div style={{ display: 'flex', gap: 5, marginBottom: 16 }}>
               {DAYS.map((d, i) => {
                 const active = i === weekDay;
+                const isToday = i === dayIdx;
                 const isWE = !SCHEDULE[d].college;
                 return (
                   <button key={d} onClick={() => setWeekDay(i)} style={{
-                    flex: 1, height: 54, borderRadius: 14, border: 'none', cursor: 'pointer',
+                    flex: 1, height: 54, borderRadius: 14, cursor: 'pointer',
+                    border: isToday && !active ? '1.5px solid rgba(212,132,122,0.45)' : '1.5px solid transparent',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2,
                     fontSize: 10, fontWeight: 600, transition: 'all .3s cubic-bezier(.22,.68,0,.98)',
                     background: active ? 'linear-gradient(135deg, #d4847a, #c9956b)' : 'rgba(255,255,255,0.5)',
@@ -559,7 +567,7 @@ export default function App() {
                     boxShadow: active ? '0 4px 16px rgba(212,132,122,0.25)' : 'none',
                   }}>
                     <span>{d}</span>
-                    <span style={{ fontSize: 7, opacity: .7 }}>{SCHEDULE[d].college ? 'COLLEGE' : 'FREE'}</span>
+                    <span style={{ fontSize: 7, opacity: .7 }}>{isToday ? 'TODAY' : SCHEDULE[d].college ? 'COLLEGE' : 'FREE'}</span>
                   </button>
                 );
               })}
@@ -790,7 +798,7 @@ export default function App() {
                         </div>
                       ))}
                     </div>
-                    <div style={{ marginTop: 16, fontSize: 12, color: '#8b7060' }}>Since {new Date(anniversary).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+                    <div style={{ marginTop: 16, fontSize: 12, color: '#8b7060' }}>Since {new Date(anniversary + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</div>
                     <button onClick={() => setShowAnniEdit(true)} style={{
                       marginTop: 10, padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(200,170,150,0.2)', background: 'transparent', fontSize: 11, color: '#b89a8a', cursor: 'pointer',
                     }}>Edit date</button>
@@ -854,13 +862,16 @@ export default function App() {
               <Card>
                 {wishlist.length === 0 && <div style={{ textAlign: 'center', color: '#b89a8a', fontSize: 13, padding: 16 }}>No wishes yet — add your first one!</div>}
                 {wishlist.map(w => (
-                  <div key={w.id} onClick={() => toggleWish(w.id)} style={{
-                    display: 'flex', alignItems: 'center', gap: 10, padding: '12px 0', cursor: 'pointer',
+                  <div key={w.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 10, padding: '12px 0',
                     borderBottom: '1px solid rgba(200,170,150,0.06)',
                   }}>
-                    <Checkbox checked={w.done} onChange={() => {}} color="#c9956b" />
-                    <span style={{ fontSize: 13, flex: 1, textDecoration: w.done ? 'line-through' : 'none', opacity: w.done ? .5 : 1 }}>{w.text}</span>
-                    {w.done && <span style={{ fontSize: 11 }}>✨</span>}
+                    <div onClick={() => toggleWish(w.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, cursor: 'pointer' }}>
+                      <Checkbox checked={w.done} onChange={() => {}} color="#c9956b" />
+                      <span style={{ fontSize: 13, flex: 1, textDecoration: w.done ? 'line-through' : 'none', opacity: w.done ? .5 : 1 }}>{w.text}</span>
+                      {w.done && <span style={{ fontSize: 11 }}>✨</span>}
+                    </div>
+                    <button onClick={() => setWishlist(wishlist.filter(x => x.id !== w.id))} style={{ background: 'none', border: 'none', fontSize: 14, color: '#ccc', cursor: 'pointer', padding: 4, flexShrink: 0 }}>×</button>
                   </div>
                 ))}
                 <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
@@ -890,7 +901,10 @@ export default function App() {
               </Card>
               {journal.map(j => (
                 <Card key={j.id} style={{ marginTop: 10, background: 'rgba(255,255,255,0.5)' }}>
-                  <div style={{ fontSize: 13, color: '#3d2c2c', lineHeight: 1.6 }}>{j.text}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                    <div style={{ fontSize: 13, color: '#3d2c2c', lineHeight: 1.6, flex: 1 }}>{j.text}</div>
+                    <button onClick={() => setJournal(journal.filter(x => x.id !== j.id))} style={{ background: 'none', border: 'none', fontSize: 14, color: '#ccc', cursor: 'pointer', padding: '0 0 0 4px', flexShrink: 0, lineHeight: 1 }}>×</button>
+                  </div>
                   <div style={{ fontSize: 10, color: '#b89a8a', marginTop: 8, textAlign: 'right' }}>{j.date}</div>
                 </Card>
               ))}
