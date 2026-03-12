@@ -252,7 +252,7 @@ export default function App() {
   ]);
   const [wishlist, setWishlist] = useStorage('wishlist', []);
   const [journal, setJournal] = useStorage('journal', []);
-  const [anniversary, setAnniversary] = useStorage('anniversary', '');
+  const [anniversary, setAnniversary] = useStorage('anniversary', '2022-07-05');
   const [moodHistory, setMoodHistory] = useStorage('moodHistory', {});
   const [streakData, setStreakData] = useStorage('streaks', {});
 
