@@ -394,7 +394,7 @@ function SetupScreen({ names, onPick }) {
             flex: 1, padding: '28px 16px', borderRadius: 20, border: 'none', cursor: 'pointer',
             background: p.gradient, textAlign: 'center', transition: 'transform .2s',
           }}>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>{p.key === 'rinnu' ? '👩' : '👨'}</div>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>{p.key === 'rinnu' ? '👨' : '👩'}</div>
             <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, color: p.color, fontStyle: 'italic' }}>{p.name}</div>
           </button>
         ))}
