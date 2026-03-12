@@ -1,0 +1,17 @@
+{
+  "name": "Rinnu ♥ Kanu",
+  "short_name": "R♥K",
+  "description": "Our couple companion app",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fdf6f0",
+  "theme_color": "#fdf6f0",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
